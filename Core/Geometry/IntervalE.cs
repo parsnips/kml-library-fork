@@ -1,76 +1,60 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Xml;
-using System.Xml.Serialization;
-
 namespace Core.Geometry
 {
+    using System;
+    using System.Xml.Serialization;
+
     public class IntervalE
     {
         #region Private Fields
+
         private double m_Maximum;
         private double m_Minimum;
+
         #endregion
 
         #region Constructors
+
         public IntervalE(double min, double max)
         {
             m_Minimum = min;
             m_Maximum = max;
         }
+
         public IntervalE()
-        { }
+        {
+        }
+
         #endregion
 
         #region GetSet
-        [XmlIgnore()]
+
+        [XmlIgnore]
         public double Dimension
         {
-            get
-            {
-                return m_Maximum - m_Minimum;
-            }
-            set
-            {
-                m_Maximum = m_Minimum + value;
-            }
+            get { return m_Maximum - m_Minimum; }
+            set { m_Maximum = m_Minimum + value; }
         }
 
-        [XmlAttribute()]
+        [XmlAttribute]
         public double Minimum
         {
-            get
-            {
-                return m_Minimum;
-            }
-            set
-            {
-                m_Minimum = value;
-            }
+            get { return m_Minimum; }
+            set { m_Minimum = value; }
         }
 
-        [XmlAttribute()]
+        [XmlAttribute]
         public double Maximum
         {
-            get
-            {
-                return  m_Maximum;
-            }
-            set
-            {
-                m_Maximum = value;
-            }
+            get { return m_Maximum; }
+            set { m_Maximum = value; }
         }
 
-        [XmlIgnore()]
+        [XmlIgnore]
         public bool IsEmpty
         {
-            get
-            {
-                return (Dimension == 0);
-            }
+            get { return Dimension == 0; }
         }
+
         #endregion
 
         public bool IntersectsWith(IntervalE b)

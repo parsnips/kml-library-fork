@@ -1,18 +1,24 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace Core.ExtendedObjects
 {
+    using System.Collections.Generic;
+
     public class EventList<T> : List<T>
     {
+        public EventList()
+        {
+        }
+
+        public EventList(IEnumerable<T> collection) : base(collection)
+        {
+        }
+
+        public EventList(int capacity) : base(capacity)
+        {
+        }
+
         public event GenericEventHandler<T> ObjectRemoved;
         public event GenericEventHandler<T> ObjectAdded;
         public event GenericEventHandler<List<T>> Clearing;
-
-        public EventList() : base() { }
-        public EventList(IEnumerable<T> collection) : base(collection) { }
-        public EventList(int capacity) : base(capacity) { }
 
         public new void Add(T item)
         {
@@ -28,12 +34,12 @@ namespace Core.ExtendedObjects
 
         public new void AddRange(IEnumerable<T> collection)
         {
-            foreach (T item in collection)
+            foreach (var item in collection)
             {
                 Add(item);
             }
         }
-        
+
         public new void Remove(T item)
         {
             base.Remove(item);
@@ -42,7 +48,8 @@ namespace Core.ExtendedObjects
 
         public void RemoveRange(IEnumerable<T> collection)
         {
-            foreach (T item in collection) {
+            foreach (var item in collection)
+            {
                 Remove(item);
             }
         }
@@ -55,23 +62,26 @@ namespace Core.ExtendedObjects
 
         protected void Call_ObjectAdded(T item)
         {
-            if (ObjectAdded != null) {
+            if (ObjectAdded != null)
+            {
                 ObjectAdded(null, new GenericEventArgs<T>(item));
             }
         }
 
         protected void Call_ObjectRemoved(T item)
         {
-            if (ObjectRemoved != null) {
+            if (ObjectRemoved != null)
+            {
                 ObjectRemoved(null, new GenericEventArgs<T>(item));
             }
-        }        
+        }
 
         protected void Call_Clearing(List<T> items)
         {
-            if (Clearing != null) {
+            if (Clearing != null)
+            {
                 Clearing(null, new GenericEventArgs<List<T>>(items));
             }
         }
-    }    
+    }
 }

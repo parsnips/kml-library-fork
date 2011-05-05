@@ -1,31 +1,34 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Drawing;
-
 namespace Core.Utils
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+
     public static class ColorUtils
     {
-        public static string ColorToHashHTML(Color col) {
-            Color tmpc2 = Color.FromArgb(col.ToArgb());
+        private static readonly Dictionary<Color, CIELAB> cielabLookup = new Dictionary<Color, CIELAB>();
+
+        public static string ColorToHashHTML(Color col)
+        {
+            var tmpc2 = Color.FromArgb(col.ToArgb());
             return ColorTranslator.ToHtml(tmpc2);
         }
 
         /// <summary>
-        /// Used to get an alpha blend of 2 colors. 
+        ///   Used to get an alpha blend of 2 colors.
         /// </summary>
-        /// <param name="aToB">A number from 0 -> 1 (100% Color A -> 100% Color B) </param>
+        /// <param name = "aToB">A number from 0 -> 1 (100% Color A -> 100% Color B) </param>
         /// <returns>A new color that represents a mix of the other 2.</returns>
-        public static Color GetInbetweenColor(Color a, Color b, double aToB) {
+        public static Color GetInbetweenColor(Color a, Color b, double aToB)
+        {
             aToB = Math.Min(1, aToB);
-            int redD = b.R - a.R;
-            int greenD = b.G - a.G;
-            int blueD = b.B - a.B;
+            var redD = b.R - a.R;
+            var greenD = b.G - a.G;
+            var blueD = b.B - a.B;
 
-            int red = Convert.ToInt32((double)a.R + (double)redD * aToB);
-            int green = Convert.ToInt32((double)a.G + (double)greenD * aToB);
-            int blue = Convert.ToInt32((double)a.B + (double)blueD * aToB);
+            var red = Convert.ToInt32(a.R + redD*aToB);
+            var green = Convert.ToInt32(a.G + greenD*aToB);
+            var blue = Convert.ToInt32(a.B + blueD*aToB);
 
             return Color.FromArgb(red, green, blue);
         }
@@ -44,74 +47,70 @@ namespace Core.Utils
             return colors.ToArray();
         }*/
 
-        private static Dictionary<Color, CIELAB> cielabLookup = new Dictionary<Color, CIELAB>();
-
-        public struct CIELAB
+        public static CIELAB ConvertToCIELAB(Color c)
         {
-            public double L;
-            public double a;
-            public double b;
-
-            public double DistanceTo(CIELAB c) {
-                double dL = L - c.L;
-                double da = a - c.a;
-                double db = b - c.b;
-                return Math.Sqrt(0.5 * dL * dL + da * da + db * db);
-            }
-
-            public double DistanceTo(Color clr) {
-                return DistanceTo(ConvertToCIELAB(clr));
-            }
-        }
-
-        public static CIELAB ConvertToCIELAB(Color c) {
-            if (cielabLookup.ContainsKey(c)) {
+            if (cielabLookup.ContainsKey(c))
+            {
                 return cielabLookup[c];
             }
-            double rf = ConvertChannel(c.R) * 100;
-            double gf = ConvertChannel(c.G) * 100;
-            double bf = ConvertChannel(c.B) * 100;
 
-            double var_X = rf * 0.4124 + gf * 0.3576 + bf * 0.1805;
-            double var_Y = rf * 0.2126 + gf * 0.7152 + bf * 0.0722;
-            double var_Z = rf * 0.0193 + gf * 0.1192 + bf * 0.9505;
+            var rf = ConvertChannel(c.R)*100;
+            var gf = ConvertChannel(c.G)*100;
+            var bf = ConvertChannel(c.B)*100;
 
-            var_X = var_X / 95.047;          //Observer = 2°, Illuminant = D65
-            var_Y = var_Y / 100.000;
-            var_Z = var_Z / 108.883;
+            var var_X = rf*0.4124 + gf*0.3576 + bf*0.1805;
+            var var_Y = rf*0.2126 + gf*0.7152 + bf*0.0722;
+            var var_Z = rf*0.0193 + gf*0.1192 + bf*0.9505;
 
-            double toPow = 1.0 / 3.0;
-            if (var_X > 0.008856) {
+            var_X = var_X/95.047; // Observer = 2°, Illuminant = D65
+            var_Y = var_Y/100.000;
+            var_Z = var_Z/108.883;
+
+            var toPow = 1.0/3.0;
+            if (var_X > 0.008856)
+            {
                 var_X = Math.Pow(var_X, toPow);
-            } else {
-                var_X = (7.787 * var_X) + (16 / 116);
             }
-            if (var_Y > 0.008856) {
+            else
+            {
+                var_X = (7.787*var_X) + (16/116);
+            }
+
+            if (var_Y > 0.008856)
+            {
                 var_Y = Math.Pow(var_Y, toPow);
-            } else {
-                var_Y = (7.787 * var_Y) + (16 / 116);
             }
-            if (var_Z > 0.008856) {
+            else
+            {
+                var_Y = (7.787*var_Y) + (16/116);
+            }
+
+            if (var_Z > 0.008856)
+            {
                 var_Z = Math.Pow(var_Z, toPow);
-            } else {
-                var_Z = (7.787 * var_Z) + (16 / 116);
+            }
+            else
+            {
+                var_Z = (7.787*var_Z) + (16/116);
             }
 
-            CIELAB ans = new CIELAB();
-            ans.L = (116 * var_Y) - 16;
-            ans.a = 500 * (var_X - var_Y);
-            ans.b = 200 * (var_Y - var_Z);
-
+            var ans = new CIELAB();
+            ans.L = (116*var_Y) - 16;
+            ans.a = 500*(var_X - var_Y);
+            ans.b = 200*(var_Y - var_Z);
             cielabLookup[c] = ans;
             return ans;
         }
 
-        private static double ConvertChannel(byte channel) {
-            double f = (double)channel / 255;
-            if (f > 0.04045) {
-                return Math.Pow((f + 0.055) / 1.055, 2.4);
+        private static double ConvertChannel(byte channel)
+        {
+            var f = (double) channel/255;
+            if (f > 0.04045)
+            {
+                return Math.Pow((f + 0.055)/1.055, 2.4);
             }
-            return f / 12.92;
+
+            return f/12.92;
         }
 
         /*
@@ -174,13 +173,15 @@ begin
   CIEb = 200 * ( var_Y - var_Z );
 end;
          */
-
-        public static Color GetRandomNamedColor(Random r) {
-            Color clr = Color.FromKnownColor(KnownColor.Control);
-            Array clrs = Enum.GetValues(typeof(KnownColor));
-            while (clr.IsSystemColor) {
-                clr = Color.FromKnownColor((KnownColor)clrs.GetValue(r.Next(clrs.Length)));
+        public static Color GetRandomNamedColor(Random r)
+        {
+            var clr = Color.FromKnownColor(KnownColor.Control);
+            var clrs = Enum.GetValues(typeof (KnownColor));
+            while (clr.IsSystemColor)
+            {
+                clr = Color.FromKnownColor((KnownColor) clrs.GetValue(r.Next(clrs.Length)));
             }
+
             return clr;
         }
 
@@ -191,31 +192,37 @@ end;
             int b = 255 - Convert.ToInt32(aColor.B);
             return Color.FromArgb(aColor.A, r, g, b);
         }*/
-
-        public static Color Invert(Color aColor) {
-            int r = Convert.ToInt32(aColor.R);
-            int g = Convert.ToInt32(aColor.G);
-            int b = Convert.ToInt32(aColor.B);
+        public static Color Invert(Color aColor)
+        {
+            var r = Convert.ToInt32(aColor.R);
+            var g = Convert.ToInt32(aColor.G);
+            var b = Convert.ToInt32(aColor.B);
             return ((r + g + b) > 255) ? Color.Black : Color.White;
         }
 
-        public static List<Color> GetNamedColors() {
-            List<Color> colors = new List<Color>();
-            foreach (string n in Enum.GetNames(typeof(KnownColor))) {
-                Color clr = Color.FromKnownColor(MiscUtils.ParseEnum<KnownColor>(n));
-                if (!clr.IsSystemColor) {
+        public static List<Color> GetNamedColors()
+        {
+            var colors = new List<Color>();
+            foreach (var n in Enum.GetNames(typeof (KnownColor)))
+            {
+                var clr = Color.FromKnownColor(MiscUtils.ParseEnum<KnownColor>(n));
+                if (!clr.IsSystemColor)
+                {
                     colors.Add(clr);
                 }
             }
+
             return colors;
         }
 
         /// <summary>
-        /// Gets a list of colors that are theoretically all distinguishable from each other. Colors at the beginning of the list are easily distinguished from each other.
+        ///   Gets a list of colors that are theoretically all distinguishable from each other. Colors at the beginning of the list are easily distinguished from each other.
         /// </summary>
-        public static List<Color> GetDistinctColors() {
-            List<Color> colors = new List<Color>();
-            //--
+        public static List<Color> GetDistinctColors()
+        {
+            var colors = new List<Color>();
+
+// --
             colors.Add(ColorTranslator.FromHtml("#BEE117"));
             colors.Add(ColorTranslator.FromHtml("#FFFF00"));
             colors.Add(ColorTranslator.FromHtml("#D8011D"));
@@ -224,7 +231,8 @@ end;
             colors.Add(ColorTranslator.FromHtml("#AC4CDC"));
             colors.Add(ColorTranslator.FromHtml("#FF9400"));
             colors.Add(ColorTranslator.FromHtml("#52A400"));
-            //--
+
+// --
             colors.Add(ColorTranslator.FromHtml("#FEBABA"));
             colors.Add(ColorTranslator.FromHtml("#80D50B"));
             colors.Add(ColorTranslator.FromHtml("#FFCE00"));
@@ -233,7 +241,8 @@ end;
             colors.Add(ColorTranslator.FromHtml("#AD5701"));
             colors.Add(ColorTranslator.FromHtml("#990000"));
             colors.Add(ColorTranslator.FromHtml("#0000CC"));
-            //--
+
+// --
             colors.Add(ColorTranslator.FromHtml("#CC99CC"));
             colors.Add(ColorTranslator.FromHtml("#0D9D93"));
             colors.Add(ColorTranslator.FromHtml("#66CCFF"));
@@ -245,7 +254,8 @@ end;
             colors.Add(ColorTranslator.FromHtml("#C4E1FF"));
             colors.Add(ColorTranslator.FromHtml("#9999FF"));
             colors.Add(ColorTranslator.FromHtml("#E0FF00"));
-            //--
+
+// --
             colors.Add(ColorTranslator.FromHtml("#B3EA5F"));
             colors.Add(ColorTranslator.FromHtml("#DCDC78"));
             colors.Add(ColorTranslator.FromHtml("#FF6600"));
@@ -254,7 +264,8 @@ end;
             colors.Add(ColorTranslator.FromHtml("#416529"));
             colors.Add(ColorTranslator.FromHtml("#00CC99"));
             colors.Add(ColorTranslator.FromHtml("#71437C"));
-            //--
+
+// --
             colors.Add(ColorTranslator.FromHtml("#66FF00"));
             colors.Add(ColorTranslator.FromHtml("#DBEF9A"));
             colors.Add(ColorTranslator.FromHtml("#429392"));
@@ -286,26 +297,59 @@ end;
             return colors;
         }
 
-        public static bool ColorsMatch(Color a, Color b, double distance) {
-            CIELAB aLab = ConvertToCIELAB(a);
+        public static bool ColorsMatch(Color a, Color b, double distance)
+        {
+            var aLab = ConvertToCIELAB(a);
             return aLab.DistanceTo(b) < distance;
         }
 
-        public static bool ColorsMatch(Color a, Color b, int tol) {
-            if (Math.Abs(a.R - b.R) > tol) {
+        public static bool ColorsMatch(Color a, Color b, int tol)
+        {
+            if (Math.Abs(a.R - b.R) > tol)
+            {
                 return false;
             }
-            if (Math.Abs(a.G - b.G) > tol) {
+
+            if (Math.Abs(a.G - b.G) > tol)
+            {
                 return false;
             }
-            if (Math.Abs(a.B - b.B) > tol) {
+
+            if (Math.Abs(a.B - b.B) > tol)
+            {
                 return false;
             }
+
             return true;
         }
 
-        public static bool AlphaTest(Color col, float threshold) {
-            return (col.A > threshold * 255);
+        public static bool AlphaTest(Color col, float threshold)
+        {
+            return col.A > threshold*255;
         }
+
+        #region Nested type: CIELAB
+
+        public struct CIELAB
+        {
+            public double L;
+            public double a;
+            public double b;
+
+            public double DistanceTo(CIELAB c)
+            {
+                var dL = L - c.L;
+                var da = a - c.a;
+                var db = b - c.b;
+                return Math.Sqrt(0.5*dL*dL + da*da + db*db);
+            }
+
+            public double DistanceTo(Color clr)
+            {
+                return DistanceTo(ConvertToCIELAB(clr));
+            }
+        }
+
+        #endregion
     }
 }

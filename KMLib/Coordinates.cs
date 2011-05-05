@@ -1,26 +1,24 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Xml.Serialization;
-using System.Xml;
-using Core;
-using Core.Geometry;
-using Core.Utils;
-
 namespace KMLib
 {
+    using System.Collections.Generic;
+    using System.Xml;
+    using System.Xml.Schema;
+    using System.Xml.Serialization;
+    using Core.Geometry;
+    using Core.Utils;
+
     public class Coordinates : List<Point3D>, IXmlSerializable
     {
         #region IXmlSerializable Members
 
-        public System.Xml.Schema.XmlSchema GetSchema()
+        public XmlSchema GetSchema()
         {
             return null;
         }
 
         public virtual void ReadXml(XmlReader r)
         {
-            string str = r.ReadElementContentAsString();
+            var str = r.ReadElementContentAsString();
             Deserialize(str);
         }
 
@@ -33,25 +31,28 @@ namespace KMLib
 
         public virtual string Serialize()
         {
-            string ans = "";
-            for (int i = 0; i < Count; i++) {
+            var ans = string.Empty;
+            for (var i = 0; i < Count; i++)
+            {
                 ans += this[i].Serialize();
-                if (i < Count - 1) {
+                if (i < Count - 1)
+                {
                     ans += " ";
                 }
             }
+
             return ans;
         }
 
         public virtual void Deserialize(string str)
         {
             str = StringUtils.RemoveExcessWhiteSpace(str);
-            List<string> bits = StringUtils.SplitToList(str, " ");
+            var bits = StringUtils.SplitToList(str, " ");
             Clear();
-            for (int i = 0; i < bits.Count; i++) {               
+            for (var i = 0; i < bits.Count; i++)
+            {
                 Add(Point3D.MakePointFromStr(bits[i]));
             }
         }
-
     }
 }

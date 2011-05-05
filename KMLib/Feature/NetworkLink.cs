@@ -1,24 +1,25 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using KMLib.Abstract;
-using Core.Xml;
-
 namespace KMLib.Feature
 {
+    using Core.Xml;
+    using Abstract;
+
     public class NetworkLink : AFeature
-   {
+    {
         private Link m_Link;
-        public Link Link {
-            get {
-                if (!XMLSerializeManager.Serializing && m_Link == null) {
+
+        public Link Link
+        {
+            get
+            {
+                if (!XMLSerializeManager.Serializing && m_Link == null)
+                {
                     m_Link = new Link();
                 }
+
                 return m_Link;
             }
-            set {
-                m_Link = value;
-            }
+
+            set { m_Link = value; }
         }
     }
 

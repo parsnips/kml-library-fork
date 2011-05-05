@@ -1,18 +1,16 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace Core.Geometry
 {
+    using System;
+
     public interface IShapeE
     {
-        event EventHandler GeometryChanged;       
         RectangleE BoundingBox { get; }
+        object Tag { get; set; }
+        event EventHandler GeometryChanged;
         bool ContainsPoint(PointE point);
         bool MostlyContains(IShapeE iShapeE);
         bool FullyContains(IShapeE iShapeE);
         IShapeE Shift(PointE pointE);
-        object Tag { get; set; }
     }
 
     public interface IShapeEUpdateable : IShapeE
@@ -22,10 +20,12 @@ namespace Core.Geometry
     }
 
     public delegate void ShapeUpdateEventHandler(object sender, ShapeUpdateEventArgs e);
+
     public class ShapeUpdateEventArgs : EventArgs
     {
-        public IShapeE OldShape;
         public IShapeE NewShape;
+        public IShapeE OldShape;
+
         public ShapeUpdateEventArgs(IShapeE oldShape, IShapeE newShape)
         {
             OldShape = oldShape;
@@ -35,7 +35,8 @@ namespace Core.Geometry
 
     public abstract class AShapeE : IShapeEUpdateable
     {
-        #region IShape Members
+        #region IShapeEUpdateable Members
+
         public event EventHandler GeometryChanged;
         public event ShapeUpdateEventHandler ShapeUpdated;
         public abstract RectangleE BoundingBox { get; }
@@ -50,16 +51,28 @@ namespace Core.Geometry
         {
             return MostlyContains(shapeE, 0.95);
         }
-        public virtual bool MostlyContains(IShapeE shapeE, double tolerance)
-        {
-            return false;
-        }
 
         public virtual bool FullyContains(IShapeE shapeE)
         {
             return false;
         }
+
+        public void UpdateShape(IShapeE newShape)
+        {
+            if (ShapeUpdated != null)
+            {
+                ShapeUpdated(this, new ShapeUpdateEventArgs(this, newShape));
+            }
+        }
+
+        public object Tag { get; set; }
+
         #endregion
+
+        public virtual bool MostlyContains(IShapeE shapeE, double tolerance)
+        {
+            return false;
+        }
 
         protected void CallGeometryChanged()
         {
@@ -69,36 +82,24 @@ namespace Core.Geometry
             }
         }
 
-        public void UpdateShape(IShapeE newShape)
-        {
-            if (ShapeUpdated != null) {
-                ShapeUpdated(this, new ShapeUpdateEventArgs(this, newShape));
-            }
-        }
-
         public static int Compare(IShapeE a, IShapeE b)
         {
-            if (a.Equals(b)) {
+            if (a.Equals(b))
+            {
                 return 0;
             }
-            if (a == null || a.BoundingBox == null) {
+
+            if (a == null || a.BoundingBox == null)
+            {
                 return -1;
             }
-            if (b == null || b.BoundingBox == null) {
+
+            if (b == null || b.BoundingBox == null)
+            {
                 return 1;
             }
 
-            return b.BoundingBox.CompareTo(a.BoundingBox); 
-        }
-
-        private object m_Tag;
-        public object Tag {
-            get {
-                return m_Tag;
-            }
-            set {
-                m_Tag = value;
-            }
+            return b.BoundingBox.CompareTo(a.BoundingBox);
         }
     }
 }

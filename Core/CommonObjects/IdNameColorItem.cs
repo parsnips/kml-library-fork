@@ -1,12 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Drawing;
-using System.Xml.Serialization;
-using System.ComponentModel;
-
 namespace Core.CommonObjects
 {
+    using System.ComponentModel;
+    using System.Drawing;
+    using System.Xml.Serialization;
+
     public interface IIdItem
     {
         string Id { get; set; }
@@ -23,7 +20,7 @@ namespace Core.CommonObjects
     }
 
     public interface IIdNameItem : IIdItem, INameItem
-    {        
+    {
     }
 
     public interface IIdNameColorItem : IIdNameItem
@@ -33,120 +30,119 @@ namespace Core.CommonObjects
 
     public abstract class AIdItem : IIdItem
     {
+        protected string m_Id;
+
+        #region IIdItem Members
+
+        [XmlAttribute, Category("Appearance")]
+        public virtual string Id
+        {
+            get { return m_Id; }
+            set { m_Id = value; }
+        }
+
+        #endregion
+
         public static int CompareIds(IIdItem a, IIdItem b)
         {
             return a.Id.CompareTo(b.Id);
         }
 
-        protected string m_Id;
-        [XmlAttribute(), Category("Appearance")]
-        public virtual string Id
-        {
-            get
-            {
-                return m_Id;
-            }
-            set
-            {
-
-                    m_Id = value;
-                
-            }
-        }
-
         public void MatchId(IIdItem item)
         {
-            m_Id = item.Id;            
+            m_Id = item.Id;
         }
     }
 
     public abstract class AIdNameItem : AIdItem, IIdNameItem
     {
-        public static int CompareNames(IIdNameItem a, IIdNameItem b)
-        {
-            if (a.Name == null) {
-                if (b.Name != null) {
-                    return 1;
-                } else {
-                    return AIdItem.CompareIds(a, b);
-                }
-            }
-            return a.Name.CompareTo(b.Name);
-        }
-
         protected string m_Name;
 
-        [XmlAttribute(), Category("Appearance")]
-        public virtual string Name
-        {
-            get
-            {
-                return m_Name;
-            }
-            set
-            {
-                m_Name = value;
-            }
-        }
-
-        [XmlIgnore()]
+        [XmlIgnore]
         public string NameOrId
         {
             get
             {
-                if (m_Name == null) {
+                if (m_Name == null)
+                {
                     return m_Id;
                 }
+
                 return m_Name;
             }
         }
 
-        protected virtual void OnIdChange(string oldId) { }
+        #region IIdNameItem Members
+
+        [XmlAttribute, Category("Appearance")]
+        public virtual string Name
+        {
+            get { return m_Name; }
+            set { m_Name = value; }
+        }
+
+        #endregion
+
+        public static int CompareNames(IIdNameItem a, IIdNameItem b)
+        {
+            if (a.Name == null)
+            {
+                if (b.Name != null)
+                {
+                    return 1;
+                }
+                else
+                {
+                    return CompareIds(a, b);
+                }
+            }
+
+            return a.Name.CompareTo(b.Name);
+        }
+
+        protected virtual void OnIdChange(string oldId)
+        {
+        }
 
         public void MatchIdName(IIdNameItem item)
         {
             m_Id = item.Id;
-            m_Name = item.Name;            
+            m_Name = item.Name;
         }
     }
 
     public abstract class AIdNameColorItem : AIdNameItem, IIdNameColorItem
     {
+        protected Color m_Color;
+
         public AIdNameColorItem(string id, string name, Color color)
         {
             m_Id = id;
             m_Name = name;
             m_Color = color;
         }
-        public AIdNameColorItem() {}
 
-        protected Color m_Color;
-
-        [XmlIgnore(), Category("Appearance")]
-        public virtual Color Color
+        public AIdNameColorItem()
         {
-            get
-            {
-                return m_Color;
-            }
-            set
-            {
-                m_Color = value;
-            }
         }
 
         [XmlAttribute("Color"), Browsable(false)]
         public string Color_XML
         {
-            get
-            {
-                return ColorTranslator.ToHtml(m_Color);
-            }
-            set
-            {
-                Color = ColorTranslator.FromHtml(value);
-            }
+            get { return ColorTranslator.ToHtml(m_Color); }
+            set { Color = ColorTranslator.FromHtml(value); }
         }
+
+        #region IIdNameColorItem Members
+
+        [XmlIgnore, Category("Appearance")]
+        public virtual Color Color
+        {
+            get { return m_Color; }
+            set { m_Color = value; }
+        }
+
+        #endregion
 
         public void MatchIdNameColor(IIdNameColorItem item)
         {
@@ -168,5 +164,4 @@ namespace Core.CommonObjects
             return string.Concat(m_Id, m_Name, m_Color.Name).GetHashCode();
         }*/
     }
-
 }

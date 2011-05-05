@@ -1,50 +1,52 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using KMLib;
-using KMLib.Feature;
-using Core.FileHandling;
-using KMLib.Geometry;
-
 namespace KmlTestbed
 {
+    using System;
+    using System.Drawing;
+    using System.Windows.Forms;
+    using Core.FileHandling;
+    using KMLib;
+    using KMLib.Feature;
+    using KMLib.Geometry;
+
     public partial class TestFrm : Form
     {
-        public TestFrm() {
+        public TestFrm()
+        {
             InitializeComponent();
         }
 
-        private void button1_Click(object sender, EventArgs e) {
-            KMLRoot kml = CreateKmlDoc();
-            LoadSave ls = new LoadSave("kml");
-            string fpath = ls.GetSavePath();
-            if (fpath != null) {
+        private void button1_Click(object sender, EventArgs e)
+        {
+            var kml = CreateKmlDoc();
+            var ls = new LoadSave("kml");
+            var fpath = ls.GetSavePath();
+            if (fpath != null)
+            {
                 kml.Save(fpath);
             }
         }
 
-        private void button3_Click(object sender, EventArgs e) {
-            KMLRoot kml = CreateKmlFeat();
-            LoadSave ls = new LoadSave("kml");
-            string fpath = ls.GetSavePath();
-            if (fpath != null) {
+        private void button3_Click(object sender, EventArgs e)
+        {
+            var kml = CreateKmlFeat();
+            var ls = new LoadSave("kml");
+            var fpath = ls.GetSavePath();
+            if (fpath != null)
+            {
                 kml.Save(fpath);
             }
         }
 
-        private KMLRoot CreateKmlDoc() {
-            KMLRoot kml = new KMLRoot();
-            Placemark pm = new Placemark();
+        private KMLRoot CreateKmlDoc()
+        {
+            var kml = new KMLRoot();
+            var pm = new Placemark();
             pm.name = "foo";
             pm.Point = new KmlPoint(120, 45, 50);
             pm.Snippet = "foo is cool";
             pm.Snippet.maxLines = 1;
 
-            Folder fldr = new Folder("Test Folder");
+            var fldr = new Folder("Test Folder");
 
             kml.Document.Add(pm);
             kml.Document.Add(new Placemark());
@@ -53,12 +55,13 @@ namespace KmlTestbed
             return kml;
         }
 
-        private KMLRoot CreateKmlFeat() {
-            KMLRoot kml = new KMLRoot();
-            Folder fldr = new Folder("Test Folder");
+        private KMLRoot CreateKmlFeat()
+        {
+            var kml = new KMLRoot();
+            var fldr = new Folder("Test Folder");
             fldr.Add(new Folder("Sub Folder"));
 
-            GroundOverlay g = new GroundOverlay();
+            var g = new GroundOverlay();
             g.altitude = 100;
             g.altitudeMode = AltitudeMode.relativeToGround;
             g.color = Color.Blue;
@@ -70,22 +73,22 @@ namespace KmlTestbed
             return kml;
         }
 
-
-
-        private void button2_Click(object sender, EventArgs e) {
-            LoadSave ls = new LoadSave("kml");
-            string fpath = ls.GetLoadPath();
-            if (fpath != null) {
-                KMLRoot kml = KMLRoot.Load(fpath);
-                if (kml.UsesDocument) {
+        private void button2_Click(object sender, EventArgs e)
+        {
+            var ls = new LoadSave("kml");
+            var fpath = ls.GetLoadPath();
+            if (fpath != null)
+            {
+                var kml = KMLRoot.Load(fpath);
+                if (kml.UsesDocument)
+                {
                     MessageBox.Show("Loaded kml (doc): " + kml.Document.List.Count);
-                } else {
+                }
+                else
+                {
                     MessageBox.Show("Loaded kml (feature): " + kml.Feature.name);
                 }
             }
-
         }
-
-
     }
 }

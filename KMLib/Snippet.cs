@@ -1,44 +1,37 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Xml.Serialization;
-
 namespace KMLib
 {
+    using System.Xml.Serialization;
+
     public class Snippet
     {
-        public Snippet() { }
-        public Snippet(string text) {
-            m_Text = text;
-        }
-
         private int m_maxLines = 2;
-        [XmlAttribute()]
-        public int maxLines {
-            get {
-                return m_maxLines;
-            }
-            set {
-                m_maxLines = value;
-            }
+
+        public Snippet()
+        {
         }
 
-        private string m_Text;
-        [XmlText()]
-        public string Text {
-            get {
-                return m_Text;
-            }
-            set {
-                m_Text = value;
-            }
+        public Snippet(string text)
+        {
+            Text = text;
         }
 
-        public static implicit operator string(Snippet comp) {
+        [XmlAttribute]
+        public int maxLines
+        {
+            get { return m_maxLines; }
+            set { m_maxLines = value; }
+        }
+
+        [XmlText]
+        public string Text { get; set; }
+
+        public static implicit operator string(Snippet comp)
+        {
             return comp.Text;
         }
 
-        public static implicit operator Snippet(string comp) {
+        public static implicit operator Snippet(string comp)
+        {
             return new Snippet(comp);
         }
     }

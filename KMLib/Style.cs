@@ -1,101 +1,78 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Xml;
-using System.Xml.Serialization;
-using System.Drawing;
-using KMLib.Abstract;
-
 namespace KMLib
 {
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Xml.Serialization;
+    using Abstract;
+
     public class Style : AStyleSelector
     {
-        private string m_Id;
+        [XmlIgnore] private bool StyleSpecified;
+        private List<Style> m_Style;
+
         [XmlAttribute("id")]
-        public string Id
+        public string Id { get; set; }
+
+        // [XmlElement(ElementName = "BallonStyle", Type = typeof(BallonStyle))]
+        [XmlElement(ElementName = "IconStyle", Type = typeof (IconStyle))]
+        [XmlElement(ElementName = "LabelStyle", Type = typeof (LabelStyle))]
+        [XmlElement(ElementName = "LineStyle", Type = typeof (LineStyle))]
+// [XmlElement(ElementName = "ListStyle", Type = typeof(ListStyle))]
+        [XmlElement(ElementName = "PolyStyle", Type = typeof (PolyStyle))]
+        public List<Style> Lists
         {
-            get
-            {
-                return m_Id;
-            }
-            set
-            {
-                m_Id = value;
-            }
+            get { return m_Style; }
+            set { m_Style = value; }
         }
+
         public void Add(Style style)
         {
             if (m_Style == null)
             {
                 m_Style = new List<Style>();
             }
+
             m_Style.Add(style);
         }
-
-        private List<Style> m_Style;
-        //[XmlElement(ElementName = "BallonStyle", Type = typeof(BallonStyle))]
-        [XmlElement(ElementName = "IconStyle", Type = typeof(IconStyle))]
-        [XmlElement(ElementName = "LabelStyle", Type = typeof(LabelStyle))]
-        [XmlElement(ElementName = "LineStyle", Type = typeof(LineStyle))]
-        //[XmlElement(ElementName = "ListStyle", Type = typeof(ListStyle))]
-        [XmlElement(ElementName = "PolyStyle", Type = typeof(PolyStyle))]
-        public List<Style> Lists
-        {
-            get
-            {
-                return m_Style;
-            }
-            set
-            {
-                m_Style = value;
-            }
-        }
-        [XmlIgnore()]
-        private bool StyleSpecified = false;
     }
 
     public class ColorStyle : Style
     {
-        public enum ColorMode { normal, random };
+        #region ColorMode enum
+
+        public enum ColorMode
+        {
+            normal, 
+            random
+        } ;
+
+        #endregion
+
+        [XmlIgnore] private bool colorModeSpecified;
+        private ColorMode m_colorMode;
+
         public ColorStyle(Color color)
         {
-            m_Color = color;
+            Color = color;
         }
 
-        public ColorStyle() { }
-
-
-        private ColorKML m_Color;
-        [XmlElement("color")]
-        public ColorKML Color
+        public ColorStyle()
         {
-            get
-            {
-                return m_Color;
-            }
-            set
-            {
-                m_Color = value;
-            }
         }
 
-        private ColorMode m_colorMode;
+        [XmlElement("color")]
+        public ColorKML Color { get; set; }
+
         [XmlElement("colorMode")]
         public ColorMode colorMode
         {
-            get
-            {
-                return m_colorMode;
-            }
+            get { return m_colorMode; }
             set
             {
                 m_colorMode = value;
                 colorModeSpecified = true;
             }
         }
-        [XmlIgnore()]
-        private bool colorModeSpecified = false;
-        
     }
 
     public class PolyStyle : ColorStyle
@@ -104,43 +81,48 @@ namespace KMLib
 
     public class LineStyle : ColorStyle
     {
+        private float m_Width = 1.0f;
+
         public LineStyle(Color color)
         {
             Color = color;
         }
+
         public LineStyle(Color color, float width)
         {
             Color = color;
             m_Width = width;
         }
 
-        public LineStyle() { }
+        public LineStyle()
+        {
+        }
 
-        private float m_Width = 1.0f;
         [XmlElement("width")]
         public float Width
         {
-            get
-            {
-                return m_Width;
-            }
-            set
-            {
-                m_Width = value;
-            }
+            get { return m_Width; }
+            set { m_Width = value; }
         }
     }
 
     public class IconStyle : PolyStyle
     {
+        [XmlIgnore] private bool IconSpecified;
+        private Icon m_Icon;
+        private float m_scale = 1.0f;
+        [XmlIgnore] private bool scaleSpecified;
+
         public IconStyle(Color color)
         {
             Color = color;
         }
+
         public IconStyle(Icon icon)
         {
             m_Icon = icon;
         }
+
         public IconStyle(Color color, float scale, Icon icon)
         {
             Color = color;
@@ -148,61 +130,58 @@ namespace KMLib
             m_Icon = icon;
         }
 
-        public IconStyle() { }
+        public IconStyle()
+        {
+        }
 
-        private Icon m_Icon;
         [XmlElement("Icon")]
         public Icon Icon
         {
-            get
-            {
-                return m_Icon;
-            }
+            get { return m_Icon; }
             set
             {
                 m_Icon = value;
                 IconSpecified = true;
             }
         }
-        [XmlIgnore()]
-        private bool IconSpecified = false;
 
-        private float m_scale = 1.0f;
         [XmlElement("scale")]
         public float scale
         {
-            get
-            {
-                return m_scale;
-            }
+            get { return m_scale; }
             set
             {
                 m_scale = value;
                 scaleSpecified = true;
             }
         }
-        [XmlIgnore()]
-        private bool scaleSpecified = false;
     }
-
 
     public class LabelStyle : ColorStyle
     {
+        private float m_scale = 1.0f;
+        [XmlIgnore] private bool scaleSpecified;
 
-        public LabelStyle() { }
+        public LabelStyle()
+        {
+        }
+
         public LabelStyle(Color color)
         {
             Color = color;
         }
+
         public LabelStyle(float scale)
         {
             m_scale = scale;
         }
+
         public LabelStyle(Color color, float scale)
         {
             Color = color;
             m_scale = scale;
         }
+
         public LabelStyle(Color color, float scale, ColorMode newColorMode)
         {
             Color = color;
@@ -210,22 +189,15 @@ namespace KMLib
             colorMode = newColorMode;
         }
 
-
-        private float m_scale = 1.0f;
         [XmlElement("scale")]
         public float scale
         {
-            get
-            {
-                return m_scale;
-            }
+            get { return m_scale; }
             set
             {
                 m_scale = value;
                 scaleSpecified = true;
             }
         }
-        [XmlIgnore()]
-        private bool scaleSpecified = false;
     }
 }

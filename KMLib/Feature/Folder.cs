@@ -1,14 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using KMLib.Abstract;
-
 namespace KMLib.Feature
 {
+    using Abstract;
+
     public class Folder : AContainer
     {
-        public Folder() { }
-        public Folder(string t) {
+        public Folder()
+        {
+        }
+
+        public Folder(string t)
+        {
             name = t;
         }
     }

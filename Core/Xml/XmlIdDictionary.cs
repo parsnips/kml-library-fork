@@ -1,15 +1,80 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Xml;
-using System.Xml.Serialization;
-using System.Diagnostics;
-using Core.CommonObjects;
-
 namespace Core.Xml
 {
+    using System.Collections.Generic;
+    using System.Xml;
+    using System.Xml.Schema;
+    using System.Xml.Serialization;
+    using CommonObjects;
+
     public class XmlIdDictionary<T> : Dictionary<string, T>, IXmlSerializable, IIdItem where T : IIdItem
     {
+        private string m_Id;
+
+        #region IIdItem Members
+
+        [XmlAttribute("id")]
+        public string Id
+        {
+            get { return m_Id; }
+            set { m_Id = value; }
+        }
+
+        #endregion
+
+        #region IXmlSerializable Members
+
+        public XmlSchema GetSchema()
+        {
+            return null;
+        }
+
+        public void ReadXml(XmlReader r)
+        {
+            r.ReadStartElement();
+            Id = r.GetAttribute("id");
+            r.ReadStartElement("items");
+            if (r.NodeType == XmlNodeType.EndElement)
+            {
+                r.ReadEndElement(); // --items
+                return;
+            }
+
+            while (r.NodeType != XmlNodeType.EndElement)
+            {
+                XMLSerializeManager.Report("Deserializing: " + r.Name);
+                var valueSer = XmlTypeAssociator<T>.GetSerializer(r);
+                var obj = valueSer.Deserialize(r);
+                var value = (T) obj;
+                if (value.Id != null)
+                {
+                    this[value.Id] = value;
+                }
+            }
+
+            r.ReadEndElement(); // --items
+            r.ReadEndElement();
+        }
+
+        public void WriteXml(XmlWriter w)
+        {
+            if (Id != null)
+            {
+                w.WriteAttributeString("id", Id);
+            }
+
+            w.WriteStartElement("items");
+            foreach (IIdItem value in Values)
+            {
+                XMLSerializeManager.Report("Serializing: " + value.GetType().Name);
+                var valueSer = XmlTypeAssociator<T>.GetSerializer(value.GetType());
+                valueSer.Serialize(w, value, new XmlSerializerNamespaces());
+            }
+
+            w.WriteEndElement();
+        }
+
+        #endregion
+
         public void Add(T obj)
         {
             this[obj.Id] = obj;
@@ -32,29 +97,15 @@ namespace Core.Xml
                 return tnew;
             }
         }*/
-
         public T GetIdObject(string id)
         {
-            if (this.ContainsKey(id)) {
+            if (ContainsKey(id))
+            {
                 return this[id];
-            } else {
+            }
+            else
+            {
                 return default(T);
-            }
-        }
-
-        #region IXmlIdObject Members
-
-        private string m_Id;
-        [XmlAttribute("id")]
-        public string Id
-        {
-            get
-            {
-                return m_Id;
-            }
-            set
-            {
-                m_Id = value;
             }
         }
 
@@ -62,54 +113,5 @@ namespace Core.Xml
         {
             m_Id = id;
         }
-
-        #endregion
-
-        #region IXmlSerializable Members
-
-        public System.Xml.Schema.XmlSchema GetSchema()
-        {
-            return null;
-        }
-
-        public void ReadXml(XmlReader r)
-        {            
-            r.ReadStartElement();
-            Id = r.GetAttribute("id");
-            r.ReadStartElement("items");
-            if (r.NodeType == System.Xml.XmlNodeType.EndElement)
-            {
-                r.ReadEndElement();//--items
-                return;
-            }
-            while (r.NodeType != System.Xml.XmlNodeType.EndElement) {
-                XMLSerializeManager.Report("Deserializing: " + r.Name);
-                XmlSerializer valueSer = XmlTypeAssociator<T>.GetSerializer(r);
-                object obj = valueSer.Deserialize(r);
-                T value = (T)obj;
-                if (value.Id != null) {
-                    this[value.Id] = value;
-                }
-            }
-            r.ReadEndElement();//--items
-            r.ReadEndElement();
-        }
-
-        public void WriteXml(XmlWriter w)
-        {
-            if (Id != null) {
-                w.WriteAttributeString("id", Id);
-            }            
-            w.WriteStartElement("items");
-            foreach (IIdItem value in Values) {
-                XMLSerializeManager.Report("Serializing: " + value.GetType().Name);
-                XmlSerializer valueSer = XmlTypeAssociator<T>.GetSerializer(value.GetType());
-                valueSer.Serialize(w, value, new XmlSerializerNamespaces());
-            }
-            w.WriteEndElement();
-        }
-
-        #endregion
     }
-
 }

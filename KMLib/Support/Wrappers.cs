@@ -1,17 +1,16 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Xml.Serialization;
-using System.Drawing;
-using System.Xml;
-
 namespace KMLib
 {
+    using System.Drawing;
+    using System.Xml;
+    using System.Xml.Schema;
+    using System.Xml.Serialization;
+
     public abstract class AXmlSerializable : IXmlSerializable
     {
         #region IXmlSerializable Members
 
-        public virtual System.Xml.Schema.XmlSchema GetSchema() {
+        public virtual XmlSchema GetSchema()
+        {
             return null;
         }
 
@@ -23,12 +22,14 @@ namespace KMLib
 
     public abstract class AXmlWrapper : AXmlSerializable
     {
-        public override void ReadXml(XmlReader r) {
-            string str = r.ReadElementContentAsString();
+        public override void ReadXml(XmlReader r)
+        {
+            var str = r.ReadElementContentAsString();
             Deserialize(str);
         }
 
-        public override void WriteXml(XmlWriter w) {
+        public override void WriteXml(XmlWriter w)
+        {
             w.WriteString(Serialize());
         }
 
@@ -40,7 +41,6 @@ namespace KMLib
     public class KmlDouble
     {
         private double? value;
-
     }
 
     public class IntBool : AXmlWrapper
@@ -49,12 +49,12 @@ namespace KMLib
 
         public override string Serialize()
         {
-            return (isOn) ? "1" : "0";
+            return isOn ? "1" : "0";
         }
 
         public override void Deserialize(string str)
         {
-            isOn = (str == "1");
+            isOn = str == "1";
         }
 
         public static implicit operator bool(IntBool comp)
@@ -64,7 +64,7 @@ namespace KMLib
 
         public static implicit operator IntBool(bool comp)
         {
-            IntBool ans = new IntBool();
+            var ans = new IntBool();
             ans.isOn = comp;
             return ans;
         }
@@ -76,22 +76,24 @@ namespace KMLib
 
         public override string Serialize()
         {
-            //aabbggrr
+            // aabbggrr
             return ByteToHex(myCol.A) + ByteToHex(myCol.B) + ByteToHex(myCol.G) + ByteToHex(myCol.R);
         }
 
         private string ByteToHex(byte b)
         {
-            string hex = b.ToString("X");
-            if (hex.Length == 1) {
+            var hex = b.ToString("X");
+            if (hex.Length == 1)
+            {
                 return "0" + hex;
             }
+
             return hex;
         }
 
         public override void Deserialize(string str)
         {
-            myCol = Color.White;//===NOT SUPPORTED
+            myCol = Color.White; // ===NOT SUPPORTED
         }
 
         public static implicit operator Color(ColorKML comp)
@@ -101,7 +103,7 @@ namespace KMLib
 
         public static implicit operator ColorKML(Color comp)
         {
-            ColorKML ans = new ColorKML();
+            var ans = new ColorKML();
             ans.myCol = comp;
             return ans;
         }
