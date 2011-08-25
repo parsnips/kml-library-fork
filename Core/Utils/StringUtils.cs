@@ -11,7 +11,7 @@ namespace Core.Utils
     {
         internal const char WILDCARD_STRING = '*';
         internal const char WILDCARD_CHAR = '?';
-
+        
         public static string[] Split(string str, string delim)
         {
             if (str == null)
@@ -184,10 +184,9 @@ namespace Core.Utils
         public static string RemoveExcessWhiteSpace(string str)
         {
             var ans = str;
-            while (ans.Contains("  "))
-            {
-                ans = ans.Replace("  ", " ");
-            }
+            var regex = new Regex(@"\s+");
+            ans = ans.TrimStart(' ').TrimEnd(' ');
+            ans = regex.Replace(ans, @" ");
 
             return ans;
         }
